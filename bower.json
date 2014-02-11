@@ -1,0 +1,23 @@
+{
+  "name": "helios-frame-runner",
+  "version": "0.1.0",
+  "authors": [
+    "Iain M Campbell <hey@iainmc.ca>",
+    "Helios Design Labs <hello@heliozilla.com>"
+  ],
+  "description": "rAF manager",
+  "main": "helios-frame-runner.js",
+  "license": "MIT",
+  "homepage": "https://github.com/heliosdesign/helios-frame-runner",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "source",
+    "gulpfile.js",
+    "package.json",
+    "index.html"
+  ]
+}
