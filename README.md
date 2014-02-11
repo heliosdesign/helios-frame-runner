@@ -1,3 +1,5 @@
+**Bower** `helios-frame-runner`
+
 ## rAF Manager
 
 Bad things happen if you run multiple simultaneous `requestAnimationFrame` instances, so we’ve created this utility library for managing what happens in `rAF`.
