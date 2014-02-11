@@ -83,33 +83,15 @@ var raf = function(){
 	counter++;
 	if(counter>60) counter = 0;
 
-	// // run all registered functions
-
-	// for (var i = everyFrame.length - 1; i >= 0; i--) {
-	// 	everyFrame[i]();
-	// };
-
-	// if(counter == 0) {
-	// 	for (var i = everySecond.length - 1; i >= 0; i--) {
-	// 		everySecond[i]();
-	// 	};
-	// }
-
-
 	// run all registered functions
 	
-	for (func in everyFrame) {
-		if (everyFrame.hasOwnProperty(func)) {
-			everyFrame[func]();
-		}
+	for (var func in everyFrame) {
+		if (everyFrame.hasOwnProperty(func)) everyFrame[func]();
 	}
 
-	if(counter == 0) {
-		for (func in everySecond) {
-			if (everySecond.hasOwnProperty(func)) {
-				everySecond[func]();
-			}
-			// console.log(func)
+	if(counter === 0) {
+		for (var func in everySecond) {
+			if (everySecond.hasOwnProperty(func)) everySecond[func]();
 		}	
 	}
 	
