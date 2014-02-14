@@ -1,4 +1,4 @@
-var frameRunner = (function(){
+var heliosFrameRunner = (function(){
 
     %%% REPLACE %%%
 
