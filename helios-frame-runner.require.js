@@ -29,6 +29,11 @@ define([], function(){
         };
 }());
 
+var debug = false;
+var log = function(msg){
+    if(debug) console.log(msg);
+}
+
 // ********************************************************
 var running = false;
 
@@ -36,14 +41,14 @@ var startRafLoop = function(){
 	if(running) return;
 	running = true;
 	requestAnimationFrame(raf);
-	console.log('[frameRunner] start RAF Loop')
+	log('[frameRunner] start RAF Loop');
 }
 
 var stopRafLoop = function(){
 	if(!running) return;
 	running = false;
 	cancelAnimationFrame(raf);
-	console.log('[frameRunner] stop RAF Loop')
+	log('[frameRunner] stop RAF Loop');
 }
 
 
@@ -57,7 +62,7 @@ var add = function(name, to, func){
 	var arr = (to === 'everyFrame') ? everyFrame : everySecond;
 	
 	if(!arr[name]) {
-		console.log('[frameRunner] adding "'+name+'" to '+to);
+		log('[frameRunner] adding "'+name+'" to '+to);
 		arr[name] = func;
 	}
 }
@@ -66,7 +71,7 @@ var remove = function(name, from){
 	var arr = (from === 'everyFrame') ? everyFrame : everySecond;
 
 	if(arr[name]) {
-		console.log('[frameRunner] removing "'+name+'" from '+from);
+		log('[frameRunner] removing "'+name+'" from '+from);
 		delete arr[name];
 	}
 }
@@ -104,7 +109,9 @@ return {
 	stop  : stopRafLoop,
 
 	add : add,
-	remove : remove
+	remove : remove,
+
+	debug : debug
 }	
 
 
