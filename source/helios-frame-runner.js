@@ -7,12 +7,11 @@
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
-                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
     }
  
     if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
+        window.requestAnimationFrame = function(callback) {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
             var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
@@ -78,10 +77,18 @@ var remove = function(name, from){
 // ********************************************************
 // Main RAF Loop Function
 
+var frameCount = 0;
+
+var getFrameCount = function(){
+	return frameCount;
+}
+
 var counter = 0;
 var raf = function(){
 
 	requestAnimationFrame(raf);
+
+	frameCount += 1;
 
 	counter++;
 	if(counter>60) counter = 0;
@@ -109,6 +116,8 @@ return {
 	add : add,
 	remove : remove,
 
-	debug : debug
+	debug : debug,
+
+	frameCount : getFrameCount
 }	
 
