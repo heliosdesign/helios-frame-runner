@@ -2,38 +2,69 @@
 
 ## rAF Manager
 
-Bad things happen if you run multiple simultaneous `requestAnimationFrame` instances, so we’ve created this utility library for managing what happens in `rAF`.
+Running multiple simultaneous `requestAnimationFrame` calls is inefficient, so we’ve created this utility library for managing `rAF` functions, with some extra functionality as well.
 
-Functions can be added and removed from one of two arrays: `everySecond` and `everyFrame`.
+The Helios Frame Runner supports two types of functions: `everySecond` and `everyFrame`. Of course, it includes an `rAF` polyfill.
+
+### Development
+
+You’ll need to run `npm install`. Edit `source/helios-frame-runner.js`. Running `gulp watch` will compile the versions you see in the root directory. 
+
+`test/` is a simple mocha unit test. You’ll need to run `bower install` for its dependencies.
 
 ### How to Use
 
 ```
-var rAF = new frameRunner();
-
-rAF.start();
-
-rAF.add('lots-of-calculation', 'everyFrame', lotsOfCalculation);
-
-// later...
-rAF.remove('lots-of-calculation', 'everyFrame');
-
-
+var frameRunner = new heliosFrameRunner()
 ```
 
-### Methods
+Add a function to the manager:
 
-`start()`
+```
+var destroyer = frameRunner.add( 'functionId', 'everyFrame', function )
+```
 
-`stop()`
+`add()` returns a destroyer function. You can call it to cleanly remove the function you added.
 
-`add(name, type, function)`
+You can also remove that function by its ID:
 
-- `name`: string to identify your function so you can remove it again later
+```
+frameRunner.remove('lots-of-calculation', 'everyFrame')
+```
+
+These two methods are functionally identical.
+
+Now that you’ve added a function, start the `requestAnimationFrame` loop:
+
+```
+frameRunner.start()
+```
+
+And stop it again later:
+
+```
+frameRunner.stop()
+```
+
+Finally, you can get get a framecount as an integer using `frameRunner.frameCount()`.
+
+
+### API
+
+#### `start()`
+
+#### `stop()`
+
+#### `add( id, type, function )`
+
+Returns: destroyer function
+
+- `id`: string to identify your function so you can remove it again later
 - `type`: `'everySecond'` or `'everyFrame'`
 - `function`: the function you’d like run every second or frame
 
-`remove(name, type)`
+#### `remove( id, type )`
 
-- `name`
-- `type`: array to remove from
+- `id`
+- `type`: 'everySecond' or 'everyFrame'. Optional, omit to remove ID from both types.
+

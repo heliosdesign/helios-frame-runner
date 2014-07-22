@@ -54,8 +54,8 @@ var stopRafLoop = function(){
 
 // ********************************************************
 
-var everyFrame  = [];
-var everySecond = [];
+var everyFrame  = {};
+var everySecond = {};
 
 var add = function(name, to, func){
 
