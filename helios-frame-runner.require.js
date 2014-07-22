@@ -1,6 +1,7 @@
 define([], function(){
 
-    // ********************************************************
+    
+// ********************************************************
 // requestAnimationFrame() Polyfill
 // https://gist.github.com/paulirish/1579671
 
@@ -9,12 +10,11 @@ define([], function(){
     var vendors = ['ms', 'moz', 'webkit', 'o'];
     for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
         window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] 
-                                   || window[vendors[x]+'CancelRequestAnimationFrame'];
+        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
     }
  
     if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback, element) {
+        window.requestAnimationFrame = function(callback) {
             var currTime = new Date().getTime();
             var timeToCall = Math.max(0, 16 - (currTime - lastTime));
             var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
@@ -53,37 +53,74 @@ var stopRafLoop = function(){
 
 
 // ********************************************************
-// 
 
 var everyFrame  = [];
 var everySecond = [];
 
 var add = function(name, to, func){
+
+	if( !name || !to || !func )
+		throw new Error('missing argument')
+
+	if( typeof func !== 'function')
+		throw new Error('not a valid function')
+
 	var arr = (to === 'everyFrame') ? everyFrame : everySecond;
-	
+
 	if(!arr[name]) {
 		log('[frameRunner] adding "'+name+'" to '+to);
 		arr[name] = func;
+
+		// return destroyer
+		return function(){ remove( name, to ) }
+
+	} else {
+		throw new Error('function exists') // function name already exists
 	}
 }
 
 var remove = function(name, from){
-	var arr = (from === 'everyFrame') ? everyFrame : everySecond;
+	var arr
 
-	if(arr[name]) {
-		log('[frameRunner] removing "'+name+'" from '+from);
-		delete arr[name];
+	if( typeof from === 'undefined' ){
+
+		if( everyFrame[name] ) {
+			log('[frameRunner] removing "'+name+'" from everyFrame');
+			delete everyFrame[name]
+		}
+
+		if( everySecond[name] ){
+			log('[frameRunner] removing "'+name+'" from everySecond');
+			delete everySecond[name]
+		}
+		
+	} else {
+
+		arr = (from === 'everyFrame') ? everyFrame : everySecond;
+
+		if(arr[name]) {
+			log('[frameRunner] removing "'+name+'" from '+from);
+			delete arr[name];
+		}
+
 	}
 }
 
-
 // ********************************************************
 // Main RAF Loop Function
+
+var frameCount = 0;
+
+var getFrameCount = function(){
+	return frameCount;
+}
 
 var counter = 0;
 var raf = function(){
 
 	requestAnimationFrame(raf);
+
+	frameCount += 1;
 
 	counter++;
 	if(counter>60) counter = 0;
@@ -105,15 +142,16 @@ var raf = function(){
 
 // ********************************************************
 return {
-	start : startRafLoop,
-	stop  : stopRafLoop,
+	start: startRafLoop,
+	stop:  stopRafLoop,
 
-	add : add,
-	remove : remove,
+	add:    add,
+	remove: remove,
 
-	debug : debug
+	debug: debug,
+
+	frameCount: getFrameCount
 }	
-
 
 
 });

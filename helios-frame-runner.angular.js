@@ -3,7 +3,8 @@
 angular.module('heliosFrameRunner', ['ng'])
     .factory('frameRunner', function($window, $rootScope) {
 
-        // ********************************************************
+        
+// ********************************************************
 // requestAnimationFrame() Polyfill
 // https://gist.github.com/paulirish/1579671
 
@@ -55,29 +56,58 @@ var stopRafLoop = function(){
 
 
 // ********************************************************
-// 
 
 var everyFrame  = [];
 var everySecond = [];
 
 var add = function(name, to, func){
+
+	if( !name || !to || !func )
+		throw new Error('missing argument')
+
+	if( typeof func !== 'function')
+		throw new Error('not a valid function')
+
 	var arr = (to === 'everyFrame') ? everyFrame : everySecond;
-	
+
 	if(!arr[name]) {
 		log('[frameRunner] adding "'+name+'" to '+to);
 		arr[name] = func;
+
+		// return destroyer
+		return function(){ remove( name, to ) }
+
+	} else {
+		throw new Error('function exists') // function name already exists
 	}
 }
 
 var remove = function(name, from){
-	var arr = (from === 'everyFrame') ? everyFrame : everySecond;
+	var arr
 
-	if(arr[name]) {
-		log('[frameRunner] removing "'+name+'" from '+from);
-		delete arr[name];
+	if( typeof from === 'undefined' ){
+
+		if( everyFrame[name] ) {
+			log('[frameRunner] removing "'+name+'" from everyFrame');
+			delete everyFrame[name]
+		}
+
+		if( everySecond[name] ){
+			log('[frameRunner] removing "'+name+'" from everySecond');
+			delete everySecond[name]
+		}
+		
+	} else {
+
+		arr = (from === 'everyFrame') ? everyFrame : everySecond;
+
+		if(arr[name]) {
+			log('[frameRunner] removing "'+name+'" from '+from);
+			delete arr[name];
+		}
+
 	}
 }
-
 
 // ********************************************************
 // Main RAF Loop Function
@@ -115,17 +145,16 @@ var raf = function(){
 
 // ********************************************************
 return {
-	start : startRafLoop,
-	stop  : stopRafLoop,
+	start: startRafLoop,
+	stop:  stopRafLoop,
 
-	add : add,
-	remove : remove,
+	add:    add,
+	remove: remove,
 
-	debug : debug,
+	debug: debug,
 
-	frameCount : getFrameCount
+	frameCount: getFrameCount
 }	
-
 
             
     });

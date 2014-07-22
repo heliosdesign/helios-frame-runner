@@ -51,6 +51,6 @@ gulp.task('default', ['build', 'build-ng', 'build-require']);
 
 gulp.task('watch',function(){
 
-    gulp.watch('source/helios-frame-runner.js', ['build', 'build-ng']);
+    gulp.watch('source/helios-frame-runner.js', ['build', 'build-ng', 'build-require']);
 
 })
