@@ -1,162 +1,196 @@
-(function(window, angular, undefined) {'use strict';
-
 angular.module('heliosFrameRunner', ['ng'])
-    .factory('frameRunner', function($window, $rootScope) {
+  .factory('frameRunner', function($window, $rootScope) {
 
-        
+    "use strict";
+
 // ********************************************************
 // requestAnimationFrame() Polyfill
 // https://gist.github.com/paulirish/1579671
 
 (function() {
-    var lastTime = 0;
-    var vendors = ['ms', 'moz', 'webkit', 'o'];
-    for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
-        window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
-        window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
-    }
- 
-    if (!window.requestAnimationFrame)
-        window.requestAnimationFrame = function(callback) {
-            var currTime = new Date().getTime();
-            var timeToCall = Math.max(0, 16 - (currTime - lastTime));
-            var id = window.setTimeout(function() { callback(currTime + timeToCall); }, 
-              timeToCall);
-            lastTime = currTime + timeToCall;
-            return id;
-        };
- 
-    if (!window.cancelAnimationFrame)
-        window.cancelAnimationFrame = function(id) {
-            clearTimeout(id);
-        };
+  var lastTime = 0;
+  var vendors = ['ms', 'moz', 'webkit', 'o'];
+  for(var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    window.requestAnimationFrame = window[vendors[x]+'RequestAnimationFrame'];
+    window.cancelAnimationFrame = window[vendors[x]+'CancelAnimationFrame'] || window[vendors[x]+'CancelRequestAnimationFrame'];
+  }
+
+  if (!window.requestAnimationFrame)
+    window.requestAnimationFrame = function(callback) {
+      var currTime = new Date().getTime()
+      ,   timeToCall = Math.max(0, 16 - (currTime - lastTime))
+      ,   id = window.setTimeout(function() { callback(currTime + timeToCall); }
+      ,   timeToCall);
+      lastTime = currTime + timeToCall;
+      return id;
+    };
+
+  if (!window.cancelAnimationFrame) window.cancelAnimationFrame = function(id) { clearTimeout(id); };
 }());
 
-var debug = false;
-var log = function(msg){
-    if(debug) console.log(msg);
+// Extend defaults ********************************************************
+
+function extend(){
+  var output = {}, 
+    args = arguments,
+    l = args.length;
+ 
+  for ( var i = 0; i < l; i++ )       
+    for ( var key in args[i] )
+      if ( args[i].hasOwnProperty(key) )
+        output[key] = args[i][key];
+  return output;
 }
 
-// ********************************************************
-var running = false;
+
+// Debug ********************************************************
+
+var debug = true;
+
+var log = function(msg){
+  if(debug) console.log(msg);
+}
+
+var error = function(msg){
+  if(debug) throw new Error(msg)
+}
+
+// Run Control ********************************************************
+
+var running = false
+var rafID // this also doubles as a frame count
 
 var startRafLoop = function(){
-	if(running) return;
-	running = true;
-	requestAnimationFrame(raf);
-	log('[frameRunner] start RAF Loop');
+  if(running) return
+  running = true
+  rafID = window.requestAnimationFrame(rafFunction)
+  log('[frameRunner] start RAF Loop')
 }
 
 var stopRafLoop = function(){
-	if(!running) return;
-	running = false;
-	cancelAnimationFrame(raf);
-	log('[frameRunner] stop RAF Loop');
+  if(!running) return
+  running = false
+  window.cancelAnimationFrame(rafID)
+  log('[frameRunner] stop RAF Loop')
 }
 
 
-// ********************************************************
+// Add/Remove Functions ********************************************************
+ 
+var functions = { everyFrame: {}, everySecond: {} }
+var functionCount = { everyFrame: 0, everySecond: 0 }
 
-var everyFrame  = {};
-var everySecond = {};
+var addFunction = function(opts){
 
-var add = function(name, to, func){
+  var defaults = {
+    id: undefined,
+    f: undefined,
+    type: 'everyFrame',
+    autostart: true
+  }
+  var options = extend(defaults,opts)
 
-	if( !name || !to || !func )
-		throw new Error('missing argument')
+  if( !options.id || !options.f ) { error('can’t add "'+options.id+'"; missing argument'); return }
+  if( typeof options.f !== 'function') { error('"'+options.id+'" is not a valid function'); return }
 
-	if( typeof func !== 'function')
-		throw new Error('not a valid function')
+  if( ! functions[ options.type ][ options.id ] ){
 
-	var arr = (to === 'everyFrame') ? everyFrame : everySecond;
+    log('[frameRunner] adding "'+options.id+'" to '+options.type);
+    
+    functions[ options.type ][ options.id ] = options.f;
 
-	if(!arr[name]) {
-		log('[frameRunner] adding "'+name+'" to '+to);
-		arr[name] = func;
+    functionCount[options.type] += 1
 
-		// return destroyer
-		return function(){ remove( name, to ) }
+    if( options.autostart ) startRafLoop()
 
-	} else {
-		throw new Error('function exists') // function name already exists
-	}
+    return function(){ removeFunction( options.id, options.type ) } // return destroyer
+
+  } else {
+    error('[frameRunner] function exists')
+  }
 }
 
-var remove = function(name, from){
-	var arr
 
-	if( typeof from === 'undefined' ){
+var removeFunction = function(opts){
 
-		if( everyFrame[name] ) {
-			log('[frameRunner] removing "'+name+'" from everyFrame');
-			delete everyFrame[name]
-		}
+  var defaults = {
+    id: undefined,
+    type: 'everyFrame',
+    autostop: true
+  }
+  var options = extend(defaults,opts)
 
-		if( everySecond[name] ){
-			log('[frameRunner] removing "'+name+'" from everySecond');
-			delete everySecond[name]
-		}
-		
-	} else {
+  if( functions[ options.type ][ options.id ] ){
+    log('[frameRunner] removing "'+options.id+'" from '+options.type);
+    delete functions[ options.type ][ options.id ];
+    functionCount[ options.type ] -= 1
 
-		arr = (from === 'everyFrame') ? everyFrame : everySecond;
+    if( options.autostop && ! functionCount.everyFrame && ! functionCount.everySecond )
+      stopRafLoop()
 
-		if(arr[name]) {
-			log('[frameRunner] removing "'+name+'" from '+from);
-			delete arr[name];
-		}
+  } else {
+    error('function "'+name+'" doesn’t exist')
+  }
+}
 
-	}
+var check = function(opts){
+
+  var defaults = {
+    id: undefined,
+    type: 'everyFrame'
+  }
+  var options = extend(defaults,opts)
+
+  return !! functions[ options.type ][ options.id ]
 }
 
 // ********************************************************
 // Main RAF Loop Function
 
-var frameCount = 0;
-
-var getFrameCount = function(){
-	return frameCount;
-}
+var getFrameCount = function(){ return rafID }
+var isRunning = function(){ return running }
 
 var counter = 0;
-var raf = function(){
+var rafFunction = function(){
 
-	requestAnimationFrame(raf);
+  rafID = requestAnimationFrame(rafFunction);
 
-	frameCount += 1;
+  counter++;
+  if(counter>60) counter = 0;
 
-	counter++;
-	if(counter>60) counter = 0;
+  // everyFrame
+  
+  for (var func in functions.everyFrame) {
+    if (functions.everyFrame.hasOwnProperty(func)) functions.everyFrame[func]();
+  }
 
-	// run all registered functions
-	
-	for (var func in everyFrame) {
-		if (everyFrame.hasOwnProperty(func)) everyFrame[func]();
-	}
+  // everySecond
 
-	if(counter === 0) {
-		for (var func in everySecond) {
-			if (everySecond.hasOwnProperty(func)) everySecond[func]();
-		}	
-	}
-	
+  if(counter === 0) {
+    for (var func in functions.everySecond) {
+      if (functions.everySecond.hasOwnProperty(func)) functions.everySecond[func]();
+    } 
+  }
+  
 }
 
 
 // ********************************************************
 return {
-	start: startRafLoop,
-	stop:  stopRafLoop,
+  start: startRafLoop,
+  stop:  stopRafLoop,
 
-	add:    add,
-	remove: remove,
+  add:    addFunction,
+  remove: removeFunction,
 
-	debug: debug,
+  check: check,
 
-	frameCount: getFrameCount
-}	
+  running:    isRunning,
+  frameCount: getFrameCount,
 
-            
-    });
+  debug: debug,
 
-})(window, window.angular);
+} 
+
+
+  });

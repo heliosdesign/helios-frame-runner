@@ -16,6 +16,9 @@ var gulp = require('gulp'),
 var content = fs.readFileSync('source/helios-frame-runner.js', 'utf8');
 
 gulp.task('build', function(){
+    
+    content = fs.readFileSync('source/helios-frame-runner.js', 'utf8')
+
     return gulp.src(['source/wrapper.standalone.js'])
         .pipe(replace('%%% REPLACE %%%', content))
         .pipe(rename({ basename: 'helios-frame-runner' }))

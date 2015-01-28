@@ -1,27 +1,32 @@
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Mocha Tests</title>
-  <link rel="stylesheet" href="../bower_components/mocha/mocha.css" />
+	<meta charset="UTF-8">
+	<title>Document</title>
 </head>
 <body>
-  <div id="mocha"></div>
 
-  <script src="../bower_components/chai/chai.js"></script>
-  <script src="../bower_components/mocha/mocha.js"></script>
-  <script>
-    mocha.setup('bdd')
-    var expect = chai.expect;
+	<h1>frameRunner</h1>
 
-  </script>
+	<a href="#" onclick="frameRunner.start()">start</a>
+	<a href="#" onclick="frameRunner.stop()">stop</a>
 
-  <script src="../helios-frame-runner.js"></script>
-  <script src="test.js"></script>
+	<a href="#" onclick="frameRunner.add({id: 'frameCount', f: frameCount })">add function</a>
+	<a href="#" onclick="frameRunner.remove({id: 'frameCount' })">remove function</a>
 
-  <script>
-    mocha.checkLeaks();
-    mocha.run();
-  </script>
+	<script src="../helios-frame-runner.js"></script>
+	<script>
 
+		var frameRunner = new heliosFrameRunner();
+		frameRunner.debug = true
+
+		var frameCount = function(){
+			console.log( frameRunner.frameCount() );
+		}
+
+
+
+
+	</script>
 </body>
 </html>

@@ -1,10 +1,6 @@
-(function(window, angular, undefined) {'use strict';
-
 angular.module('heliosFrameRunner', ['ng'])
-    .factory('frameRunner', function($window, $rootScope) {
+  .factory('frameRunner', function($window, $rootScope) {
 
-        %%% REPLACE %%%
-            
-    });
+    %%% REPLACE %%%
 
-})(window, window.angular);
+  });
