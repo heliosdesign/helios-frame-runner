@@ -119,7 +119,6 @@ function removeFunction(opts){
 
     for (var i = functionArray[options.type].length - 1; i >= 0; i--) {
       if( functionArray[options.type][i] === theFunction ){
-        console.log('REMOVING');
         functionArray[options.type].splice(i,1);
       }
     };
