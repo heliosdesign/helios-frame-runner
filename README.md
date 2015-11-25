@@ -11,7 +11,7 @@ Of course, it includes an `rAF` polyfill.
 `add()` now takes arguments as an object.
 
 v1: `frameRunner.add( 'functionID', 'everyFrame', function )`  
-v2: `frameRunner.add({ id: 'functionID', function: function })`
+v2: `frameRunner.add({ id: 'functionID', f: function })`
 
 
 ## How to Use
