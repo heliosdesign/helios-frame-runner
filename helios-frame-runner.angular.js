@@ -20,6 +20,7 @@ return {
 
   add:    addFunction,
   remove: removeFunction,
+  removeAll: removeAll,
 
   check: check,
 
@@ -133,6 +134,11 @@ function removeFunction(opts){
   } else {
     error('function "'+name+'" doesn’t exist')
   }
+}
+
+function removeAll(){
+  functionLookup = { everyFrame: {}, everySecond: {} }
+  functionArray  = { everyFrame: [], everySecond: [] }
 }
 
 function check(opts){
