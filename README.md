@@ -19,7 +19,18 @@ v2: `frameRunner.add({ id: 'functionID', f: function })`
 
 Standalone: `var frameRunner = new heliosFrameRunner()`
 
-Angular: `angular.module('yourApp', [ 'heliosFrameRunner' ]);`
+Angular: 
+
+```
+angular
+  .module('yourApp', [ 
+    'heliosFrameRunner',
+    // other dependencies
+  ])
+  .module('yourService', function(frameRunner){
+    // do stuff
+  })
+```
 
 ### Adding and Removing Functions
 
