@@ -24,8 +24,23 @@ class FrameRunner {
   }
 
   start() {
-    this.rafID = window.requestAnimationFrame(this.rafFunction);
+    let context = this;
+
+    this.rafID = window.requestAnimationFrame(rafFunction);
     this.log('[frameRunner] start RAF Loop');
+
+    function rafFunction() {
+      context.rafID = window.requestAnimationFrame(rafFunction);
+
+      for (context.i = context.functionArray.everyFrame.length - 1; context.i >= 0; context.i--) context.functionArray.everyFrame[context.i]();
+
+      context.counter++;
+      if (context.counter > 60) context.counter = 0;
+
+      if (context.counter === 0) {
+        for (context.i = context.functionArray.everySecond.length - 1; context.i >= 0; context.i--) context.functionArray.everySecond[context.i]();
+      }
+    }
   }
 
   stop() {
@@ -40,7 +55,7 @@ class FrameRunner {
     if (arguments.length > 1) {
       options.id = arguments[0];
       options.f = arguments[1];
-      options.type = arguments[2];
+      options.type = arguments[2] || 'everyFrame';
     } else {
       let defaults = { id: null, f: null, type: 'everyFrame' };
       options = Object.assign(defaults, params);
@@ -59,15 +74,22 @@ class FrameRunner {
       this.functionLookup[options.type][options.id] = options.f;
       this.functionArray[options.type].push(options.f);
 
-      return removeFunction.bind(null, options.id, options.type); // return destroyer
+      return this.remove.bind(null, options.id, options.type); // return destroyer
     } else {
       this.error('[frameRunner] function exists');
     }
   }
 
   remove(params) {
-    let defaults = { id: undefined, type: 'everyFrame' };
-    let options = Object.assign(defaults, params);
+    let options = {};
+
+    if (typeof arguments[0] === 'object') {
+      let defaults = { id: undefined, type: 'everyFrame' };
+      options = Object.assign(defaults, params);
+    } else {
+      options.id = arguments[0];
+      options.type = arguments[1] || 'everyFrame';
+    }
 
     var theFunction = this.functionLookup[options.type][options.id];
 
@@ -81,36 +103,29 @@ class FrameRunner {
       }
 
       delete this.functionLookup[options.type][options.id];
+      return true;
     } else {
       this.error(`function "${name}" doesn’t exist`);
+      return false;
     }
   }
 
-  removeAll() {
-    this.functionLookup = { everyFrame: {}, everySecond: {} };
-    this.functionArray = { everyFrame: [], everySecond: [] };
-  }
-
   check(params) {
-    let options = Object.assign(params);
+    let options = {};
+
+    if (typeof params === 'object') {
+      let defaults = { id: undefined, type: 'everyFrame' };
+      options = Object.assign(defaults, params);
+    } else {
+      options.id = arguments[0];
+      options.type = arguments[1] || 'everyFrame';
+    }
+
     return !!this.functionLookup[options.type][options.id];
   }
 
   getFrameCount() {
     return this.rafID;
-  }
-
-  rafFunction() {
-    this.rafID = requestAnimationFrame(this.rafFunction);
-
-    for (this.i = this.functionArray.everyFrame.length - 1; this.i >= 0; this.i--) this.functionArray.everyFrame[this.i]();
-
-    this.counter++;
-    if (this.counter > 60) this.counter = 0;
-
-    if (this.counter === 0) {
-      for (this.i = this.functionArray.everySecond.length - 1; this.i >= 0; this.i--) this.functionArray.everySecond[this.i]();
-    }
   }
 
   log() {
