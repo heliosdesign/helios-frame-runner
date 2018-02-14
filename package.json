@@ -1,14 +1,31 @@
 {
   "name": "heliosAudioMixer",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "",
-  "author": "iain@heliozilla.com",
-  "license": "BSD-2-Clause",
+  "author": "iain@heliosdesignlabs.com",
+  "license": "MIT",
+  "main": "dist/frameRunner.cjs.js",
+  "module": "dist/frameRunner.esm.js",
+  "browser": "dist/frameRunner.umd.js",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w",
+    "test": "ava --watch"
+  },
   "devDependencies": {
-    "gulp-rename": "~1.0.0",
-    "gulp-replace": "~0.2.0",
-    "gulp": "~3.5.2",
-    "gulp-uglify": "~0.2.1",
-    "gulp-notify": "~0.4.5"
+    "ava": "^0.25.0",
+    "browser-env": "^3.2.5",
+    "mock-raf": "^1.0.0",
+    "rollup": "^0.55.3",
+    "rollup-plugin-babel": "^3.0.3"
+  },
+  "ava": {
+    "files": [
+      "./test/**/*.test.js"
+    ],
+    "source": [
+      "dist/**/*.js"
+    ],
+    "require": []
   }
 }
