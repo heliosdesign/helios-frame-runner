@@ -1,12 +1,10 @@
 {
-  "name": "heliosAudioMixer",
-  "version": "1.0.0",
+  "name": "helios-frame-runner",
+  "version": "3.0.0",
   "description": "",
   "author": "iain@heliosdesignlabs.com",
   "license": "MIT",
-  "main": "dist/frameRunner.cjs.js",
-  "module": "dist/frameRunner.esm.js",
-  "browser": "dist/frameRunner.umd.js",
+  "main": "dist/frameRunner.umd.js",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
