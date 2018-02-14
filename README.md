@@ -2,73 +2,74 @@
 
 # rAF Manager
 
-Running multiple simultaneous `requestAnimationFrame` calls is inefficient, so we’ve created this utility library for managing `rAF` functions, with some extra functionality as well.
-
-Of course, it includes an `rAF` polyfill.
-
-#### v2 is not compatible with v1!
-
-`add()` now takes arguments as an object.
-
-v1: `frameRunner.add( 'functionID', 'everyFrame', function )`  
-v2: `frameRunner.add({ id: 'functionID', f: function })`
-
+Running multiple simultaneous `requestAnimationFrame` calls is a noticeable performance hit, so we’ve created this utility library for managing multiple `rAF` functions while keeping your code clean and modular. It includes an `rAF` polyfill.
 
 ## How to Use
 
-
-Standalone: `var frameRunner = new heliosFrameRunner()`
-
-Angular: 
-
 ```
-angular
-  .module('yourApp', [ 
-    'heliosFrameRunner',
-    // other dependencies
-  ])
-  .module('yourService', function(frameRunner){
-    // do stuff
-  })
+let FrameRunner = require('helios-frame-runner')
+
+let frameRunner = new FrameRunner()
+
+frameRunner.add({
+  id:   'draw',
+  f:     draw,
+  type: 'everyFrame'
+})
 ```
 
-### Adding and Removing Functions
-
-Add a function to the manager:
+All function accept two signatures:
 
 ```
-frameRunner.add({ id: 'functionId', f: function })
+frameRunner.add({ id: 'functionId', f: function, type: 'everySecond' })
+
+frameRunner.remove({ id: 'functionId', f: function })
+
+frameRunner.check({ id: 'functionId' })
 ```
 
-`add()` automatically starts the `rAF` loop. If you don't want it to do this, add the option `autostart: false`.
-
-You can verify that your function has been added to the framerunner by calling `check()`.
+is equal to
 
 ```
-frameRunner.add({ id: 'sloths', f: slothsFunction })
-frameRunner.check({ id: 'sloths' }) // returns true
+frameRunner.add('functionId', function, 'everySecond')
+
+frameRunner.remove('functionId', function, 'everySecond')
+
+frameRunner.check('functionId')
 ```
+
+The `type` argument is optional in both signatures and defaults to `everyFrame`. The only other value for `type` at this time is `everySecond`, which will call the function once every sixty frames.
+
+
+### Check
+
+If you need to verify that a function has been added to the framerunner (ie to make something idempotent), call `check()`:
+
+```
+frameRunner.check({ id: 'myFunction', type: 'everyFrame' })
+
+frameRunner.check('myFunction')
+```
+
+### Removing Functions
 
 `add()` returns a destroyer function, which you can call to remove the function you added.
 
 ```
-var destroyer = frameRunner.add({ id: 'short-lived', f: function }
+var destroyer = frameRunner.add({ id: 'short-lived', f: function })
 
-// later...
 destroyer()
 
 frameRunner.check({ id: 'short-lived' }) // => false
+frameRunner.check('short-lived') // => false
 ```
 
 You can also remove that function by its ID:
 
 ```
 frameRunner.remove({ id: 'short-lived' })
+frameRunner.remove('short-lived')
 ```
-
-If all functions are removed from the frame runner, it will automatically call `cancelAnimationFrame`.
-
-
 
 ### Etc
 
@@ -79,14 +80,22 @@ frameRunner.start()
 frameRunner.stop()
 ```
 
-Framerunner will console log its actions if you set `frameRunner.debug = true`.
+Framerunner will console log all its actions if you pass `{ debug: true }` when instantiating it, ie
 
-You can get get a framecount (as an integer) using `frameRunner.frameCount()`.
+```
+let frameRunner = new FrameRunner({ debug: true })
+```
+
+You can get a framecount (as an integer) using `frameRunner.frameCount()`.
 
 
-### API
+## API
 
-#### `add( options {} )`
+#### `add()`
+
+`add({ id: '', function: f(), type: 'everyFrame' })`
+
+`add( id, f, type )`
 
 Add a function to the frame runner. Starts the rAF loop. Returns a destroyer function.
 
@@ -97,12 +106,20 @@ Options:
 - `type`: *(optional, default everyFrame)* `'everySecond'` or `'everyFrame'`
 - `autostart`: *(optional, default true)* start the `rAF` loop automatically
 
-#### `remove( options {} )`
+#### `remove()`
+
+`remove({ id: '', function: f(), type: 'everyFrame' })`
+
+`remove( id, f, type )`
 
 - `id`: string ID of function to remove
 - `type`: *(optional, default everyFrame)* 'everySecond' or 'everyFrame'.
 
-#### `check( id, type )`
+#### `check()`
+
+`check({ id: '', type: ''})`
+
+`check( id, type )`
 
 - `id`: string ID of function to check
 - `type`: *(optional, default everyFrame)* 'everySecond' or 'everyFrame'.
@@ -124,4 +141,4 @@ Returns the frame count.
 
 ## Development
 
-You’ll need to run `npm install`. Edit `source/helios-frame-runner.js`. Running `gulp watch` will compile the versions you see in the root directory. 
+You’ll need to run `npm install`. Edit `src/main.js`. Running `npm run build` will compile the versions you see in the root directory.
