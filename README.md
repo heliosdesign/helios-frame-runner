@@ -1,8 +1,4 @@
-**Bower** `helios-frame-runner`
-
-# rAF Manager
-
-Running multiple simultaneous `requestAnimationFrame` calls is a noticeable performance hit, so we’ve created this utility library for managing multiple `rAF` functions while keeping your code clean and modular. It includes an `rAF` polyfill.
+Running multiple simultaneous `requestAnimationFrame` loops causes a noticeable performance hit, so this utility manages multiple `rAF` functions while keeping your code clean and modular. It also includes an `rAF` polyfill.
 
 ## How to Use
 
@@ -11,11 +7,8 @@ let FrameRunner = require('helios-frame-runner')
 
 let frameRunner = new FrameRunner()
 
-frameRunner.add({
-  id:   'draw',
-  f:     draw,
-  type: 'everyFrame'
-})
+frameRunner.add('draw', drawFunction)
+frameRunner.add('draw2', drawFunction2)
 ```
 
 All function accept two signatures:
@@ -141,4 +134,4 @@ Returns the frame count.
 
 ## Development
 
-You’ll need to run `npm install`. Edit `src/main.js`. Running `npm run build` will compile the versions you see in the root directory.
+Clone repo, run `npm install`. Edit `src/main.js`. Running `npm run build` will compile the versions you see in the root directory. `npm test` will run unit tests, using Ava.
